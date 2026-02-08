@@ -318,6 +318,13 @@ class TigoMonitorComponent : public PollingComponent, public uart::UARTDevice {
   unsigned long get_last_cca_sync_time() const { return last_cca_sync_time_; }
   float get_total_energy_kwh() const { return total_energy_kwh_; }
   float get_energy_at_day_start() const { return energy_at_day_start_; }
+  float get_power_calibration() const { return power_calibration_; }
+  
+  // TS4-A-S (monitor-only) support: select effective output voltage
+  // Returns voltage_out if non-zero (optimizer mode), else voltage_in (monitor-only mode)
+  float get_effective_voltage(float voltage_in, float voltage_out) const {
+    return (voltage_out > 0.0f) ? voltage_out : voltage_in;
+  }
   uint32_t get_invalid_checksum_count() const { return invalid_checksum_count_; }
   uint32_t get_missed_frame_count() const { return missed_frame_count_; }
   uint32_t get_total_frames_processed() const { return total_frames_processed_; }

@@ -732,9 +732,19 @@ void TigoMonitorComponent::process_power_frame(const std::string &frame) {
   }
   
   // Calculate additional sensor values
+  // TS4-A-S (monitor-only) support: detect if voltage_out is zero
+  // This indicates a monitor-only device (no optimization)
+  float effective_voltage = get_effective_voltage(data.voltage_in, data.voltage_out);
+  bool is_monitor_only = (data.voltage_out == 0.0f && data.voltage_in > 0.0f && data.current_in > 0.0f);
+  if (is_monitor_only) {
+    ESP_LOGD(TAG, "Monitor-only device detected (TS4-A-S): addr=%s, V_in=%.2fV, V_out=0", 
+             data.addr.c_str(), data.voltage_in);
+  }
+  
   // Efficiency calculation (output power / input power * 100)
+  // For monitor-only devices: efficiency is 100% (pass-through, no losses)
   float input_power = data.voltage_in * data.current_in;
-  float output_power = data.voltage_out * data.current_in;
+  float output_power = effective_voltage * data.current_in;
   if (input_power > 0.0f) {
     data.efficiency = (output_power / input_power) * 100.0f;
   } else {
@@ -1050,7 +1060,8 @@ void TigoMonitorComponent::update_string_data() {
     for (const auto &addr : string_data.device_addrs) {
       DeviceData *device = find_device_by_addr(addr);
       if (device && device->last_update > 0) {
-        float device_power = device->voltage_out * device->current_in * power_calibration_;
+        float effective_voltage = get_effective_voltage(device->voltage_in, device->voltage_out);
+        float device_power = effective_voltage * device->current_in * power_calibration_;
         string_data.total_power += device_power;
         string_data.total_current += device->current_in;
         sum_voltage_in += device->voltage_in;
@@ -1289,7 +1300,8 @@ void TigoMonitorComponent::publish_sensor_data() {
     // Publish power sensor (calculated)
     auto power_it = power_sensors_.find(device.addr);
     if (power_it != power_sensors_.end()) {
-      float power = device.voltage_out * device.current_in * power_calibration_;
+      float effective_voltage = get_effective_voltage(device.voltage_in, device.voltage_out);
+      float power = effective_voltage * device.current_in * power_calibration_;
       power_it->second->publish_state(power);
       ESP_LOGD(TAG, "Published power for %s: %.0fW", device.addr.c_str(), power);
       
@@ -1361,7 +1373,8 @@ void TigoMonitorComponent::publish_sensor_data() {
     if (tigo_power_it != power_sensors_.end() && 
         voltage_in_sensors_.find(device.addr) == voltage_in_sensors_.end()) {
       // This is a combined sensor (power sensor exists but individual sensors don't)
-      float power = device.voltage_out * device.current_in * power_calibration_;
+      float effective_voltage = get_effective_voltage(device.voltage_in, device.voltage_out);
+      float power = effective_voltage * device.current_in * power_calibration_;
       
       // Calculate data age
       unsigned long current_time = millis();
@@ -1410,7 +1423,8 @@ void TigoMonitorComponent::publish_sensor_data() {
     const unsigned long ONLINE_THRESHOLD = 300000;  // 5 minutes
     
     for (const auto &device : devices_) {
-      float device_power = device.voltage_out * device.current_in * power_calibration_;
+      float effective_voltage = get_effective_voltage(device.voltage_in, device.voltage_out);
+      float device_power = effective_voltage * device.current_in * power_calibration_;
       total_power += device_power;
       active_devices++;
       
@@ -1467,7 +1481,8 @@ void TigoMonitorComponent::publish_sensor_data() {
     float total_power = 0.0f;
     
     for (const auto &device : devices_) {
-      float device_power = device.voltage_out * device.current_in * power_calibration_;
+      float effective_voltage = get_effective_voltage(device.voltage_in, device.voltage_out);
+      float device_power = effective_voltage * device.current_in * power_calibration_;
       total_power += device_power;
     }
     
