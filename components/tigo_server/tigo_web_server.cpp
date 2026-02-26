@@ -2023,11 +2023,11 @@ void TigoWebServer::get_dashboard_html(PSRAMString& html) {
       </div>
     </div>
     <div class="nav">
-      <a href="/" class="active">Dashboard</a>
-      <a href="/nodes">Node Table</a>
-      <a href="/status">ESP32 Status</a>
-      <a href="/yaml">YAML Config</a>
-      <a href="/cca">CCA Info</a>
+      <a href="#" id="nav-dashboard" class="active">Dashboard</a>
+      <a href="#" id="nav-nodes">Node Table</a>
+      <a href="#" id="nav-status">ESP32 Status</a>
+      <a href="#" id="nav-yaml">YAML Config</a>
+      <a href="#" id="nav-cca">CCA Info</a>
     </div>
   </div>
   
@@ -2084,14 +2084,24 @@ void TigoWebServer::get_dashboard_html(PSRAMString& html) {
   <script>
     // API Token configuration
     const API_TOKEN = ")html" + api_token_ + R"html(";
-    
+
+    // Detect ingress base path for HA ingress compatibility
+    function getBasePath() {
+      const path = window.location.pathname;
+      const lastSlash = path.lastIndexOf('/');
+      return path.substring(0, lastSlash + 1);
+    }
+    const BASE_PATH = getBasePath();
+
     // Fetch wrapper that includes authorization header if token is set
     async function apiFetch(url, options = {}) {
       if (API_TOKEN) {
         options.headers = options.headers || {};
         options.headers['Authorization'] = 'Bearer ' + API_TOKEN;
       }
-      return fetch(url, options);
+      // Prefix with BASE_PATH for HA ingress compatibility
+      const fullUrl = BASE_PATH + url.replace(/^\//, '');
+      return fetch(fullUrl, options);
     }
     
     // Temperature unit management
@@ -2185,6 +2195,12 @@ void TigoWebServer::get_dashboard_html(PSRAMString& html) {
     let invertersData = { inverters: [] }; // Cache inverter config (static, only changes on reboot)
     
     document.addEventListener('DOMContentLoaded', () => {
+      // Set nav links relative to base path (HA ingress compatibility)
+      document.getElementById('nav-dashboard').href = BASE_PATH;
+      document.getElementById('nav-nodes').href = BASE_PATH + 'nodes';
+      document.getElementById('nav-status').href = BASE_PATH + 'status';
+      document.getElementById('nav-yaml').href = BASE_PATH + 'yaml';
+      document.getElementById('nav-cca').href = BASE_PATH + 'cca';
       applyTheme();
       document.getElementById('temp-toggle').textContent = useFahrenheit ? '°C' : '°F';
       // Check for new releases
@@ -2689,11 +2705,11 @@ void TigoWebServer::get_node_table_html(PSRAMString& html) {
       </div>
     </div>
     <div class="nav">
-      <a href="/">Dashboard</a>
-      <a href="/nodes" class="active">Node Table</a>
-      <a href="/status">ESP32 Status</a>
-      <a href="/yaml">YAML Config</a>
-      <a href="/cca">CCA Info</a>
+      <a href="#" id="nav-dashboard">Dashboard</a>
+      <a href="#" id="nav-nodes" class="active">Node Table</a>
+      <a href="#" id="nav-status">ESP32 Status</a>
+      <a href="#" id="nav-yaml">YAML Config</a>
+      <a href="#" id="nav-cca">CCA Info</a>
     </div>
   </div>
   
@@ -2730,19 +2746,29 @@ void TigoWebServer::get_node_table_html(PSRAMString& html) {
   <script>
     // API Token configuration
     const API_TOKEN = ")html" + api_token_ + R"html(";
-    
+
+    // Detect ingress base path for HA ingress compatibility
+    function getBasePath() {
+      const path = window.location.pathname;
+      const lastSlash = path.lastIndexOf('/');
+      return path.substring(0, lastSlash + 1);
+    }
+    const BASE_PATH = getBasePath();
+
     // Fetch wrapper that includes authorization header if token is set
     async function apiFetch(url, options = {}) {
       if (API_TOKEN) {
         options.headers = options.headers || {};
         options.headers['Authorization'] = 'Bearer ' + API_TOKEN;
       }
-      return fetch(url, options);
+      // Prefix with BASE_PATH for HA ingress compatibility
+      const fullUrl = BASE_PATH + url.replace(/^\//, '');
+      return fetch(fullUrl, options);
     }
     
     // Dark mode
     let darkMode = localStorage.getItem('darkMode') === 'true';
-    
+
     function toggleTheme() {
       darkMode = !darkMode;
       localStorage.setItem('darkMode', darkMode);
@@ -2761,6 +2787,13 @@ void TigoWebServer::get_node_table_html(PSRAMString& html) {
     
     // Apply theme on load
     applyTheme();
+
+    // Set nav links relative to base path (HA ingress compatibility)
+    document.getElementById('nav-dashboard').href = BASE_PATH;
+    document.getElementById('nav-nodes').href = BASE_PATH + 'nodes';
+    document.getElementById('nav-status').href = BASE_PATH + 'status';
+    document.getElementById('nav-yaml').href = BASE_PATH + 'yaml';
+    document.getElementById('nav-cca').href = BASE_PATH + 'cca';
     
     async function exportNodeTable() {
       try {
@@ -2999,11 +3032,11 @@ void TigoWebServer::get_esp_status_html(PSRAMString& html) {
       </div>
     </div>
     <div class="nav">
-      <a href="/">Dashboard</a>
-      <a href="/nodes">Node Table</a>
-      <a href="/status" class="active">ESP32 Status</a>
-      <a href="/yaml">YAML Config</a>
-      <a href="/cca">CCA Info</a>
+      <a href="#" id="nav-dashboard">Dashboard</a>
+      <a href="#" id="nav-nodes">Node Table</a>
+      <a href="#" id="nav-status" class="active">ESP32 Status</a>
+      <a href="#" id="nav-yaml">YAML Config</a>
+      <a href="#" id="nav-cca">CCA Info</a>
     </div>
   </div>
   
@@ -3149,14 +3182,24 @@ void TigoWebServer::get_esp_status_html(PSRAMString& html) {
   <script>
     // API Token configuration
     const API_TOKEN = ")html" + api_token_ + R"html(";
-    
+
+    // Detect ingress base path for HA ingress compatibility
+    function getBasePath() {
+      const path = window.location.pathname;
+      const lastSlash = path.lastIndexOf('/');
+      return path.substring(0, lastSlash + 1);
+    }
+    const BASE_PATH = getBasePath();
+
     // Fetch wrapper that includes authorization header if token is set
     async function apiFetch(url, options = {}) {
       if (API_TOKEN) {
         options.headers = options.headers || {};
         options.headers['Authorization'] = 'Bearer ' + API_TOKEN;
       }
-      return fetch(url, options);
+      // Prefix with BASE_PATH for HA ingress compatibility
+      const fullUrl = BASE_PATH + url.replace(/^\//, '');
+      return fetch(fullUrl, options);
     }
     
     // Dark mode support
@@ -3438,7 +3481,7 @@ void TigoWebServer::get_esp_status_html(PSRAMString& html) {
           
           // Wait 3 seconds then restart
           setTimeout(() => {
-            window.location.href = '/';
+            window.location.href = BASE_PATH;
           }, 3000);
         } else {
           throw new Error('Failed to reset node table');
@@ -3451,7 +3494,14 @@ void TigoWebServer::get_esp_status_html(PSRAMString& html) {
     }
     
     // Log polling system (instead of WebSocket)
-    
+
+    // Set nav links relative to base path (HA ingress compatibility)
+    document.getElementById('nav-dashboard').href = BASE_PATH;
+    document.getElementById('nav-nodes').href = BASE_PATH + 'nodes';
+    document.getElementById('nav-status').href = BASE_PATH + 'status';
+    document.getElementById('nav-yaml').href = BASE_PATH + 'yaml';
+    document.getElementById('nav-cca').href = BASE_PATH + 'cca';
+
     loadData();
     setInterval(loadData, 10000);  // Poll every 10 seconds to reduce memory churn
   </script>
@@ -3528,11 +3578,11 @@ void TigoWebServer::get_yaml_config_html(PSRAMString& html) {
       </div>
     </div>
     <div class="nav">
-      <a href="/">Dashboard</a>
-      <a href="/nodes">Node Table</a>
-      <a href="/status">ESP32 Status</a>
-      <a href="/yaml" class="active">YAML Config</a>
-      <a href="/cca">CCA Info</a>
+      <a href="#" id="nav-dashboard">Dashboard</a>
+      <a href="#" id="nav-nodes">Node Table</a>
+      <a href="#" id="nav-status">ESP32 Status</a>
+      <a href="#" id="nav-yaml" class="active">YAML Config</a>
+      <a href="#" id="nav-cca">CCA Info</a>
     </div>
   </div>
   
@@ -3592,14 +3642,24 @@ void TigoWebServer::get_yaml_config_html(PSRAMString& html) {
   <script>
     // API Token configuration
     const API_TOKEN = ")html" + api_token_ + R"html(";
-    
+
+    // Detect ingress base path for HA ingress compatibility
+    function getBasePath() {
+      const path = window.location.pathname;
+      const lastSlash = path.lastIndexOf('/');
+      return path.substring(0, lastSlash + 1);
+    }
+    const BASE_PATH = getBasePath();
+
     // Fetch wrapper that includes authorization header if token is set
     async function apiFetch(url, options = {}) {
       if (API_TOKEN) {
         options.headers = options.headers || {};
         options.headers['Authorization'] = 'Bearer ' + API_TOKEN;
       }
-      return fetch(url, options);
+      // Prefix with BASE_PATH for HA ingress compatibility
+      const fullUrl = BASE_PATH + url.replace(/^\//, '');
+      return fetch(fullUrl, options);
     }
     
     // Dark mode support
@@ -3623,6 +3683,13 @@ void TigoWebServer::get_yaml_config_html(PSRAMString& html) {
     
     // Apply theme on page load
     applyTheme();
+
+    // Set nav links relative to base path (HA ingress compatibility)
+    document.getElementById('nav-dashboard').href = BASE_PATH;
+    document.getElementById('nav-nodes').href = BASE_PATH + 'nodes';
+    document.getElementById('nav-status').href = BASE_PATH + 'status';
+    document.getElementById('nav-yaml').href = BASE_PATH + 'yaml';
+    document.getElementById('nav-cca').href = BASE_PATH + 'cca';
     
     function getSelectedSensors() {
       const deviceSensors = ['power', 'peak_power', 'voltage_in', 'voltage_out', 'current_in', 
@@ -3781,11 +3848,11 @@ void TigoWebServer::get_cca_info_html(PSRAMString& html) {
       </div>
     </div>
     <div class="nav">
-      <a href="/">Dashboard</a>
-      <a href="/nodes">Node Table</a>
-      <a href="/status">ESP32 Status</a>
-      <a href="/yaml">YAML Config</a>
-      <a href="/cca" class="active">CCA Info</a>
+      <a href="#" id="nav-dashboard">Dashboard</a>
+      <a href="#" id="nav-nodes">Node Table</a>
+      <a href="#" id="nav-status">ESP32 Status</a>
+      <a href="#" id="nav-yaml">YAML Config</a>
+      <a href="#" id="nav-cca" class="active">CCA Info</a>
     </div>
   </div>
   
@@ -3824,14 +3891,24 @@ void TigoWebServer::get_cca_info_html(PSRAMString& html) {
   <script>
     // API Token configuration
     const API_TOKEN = ")html" + api_token_ + R"html(";
-    
+
+    // Detect ingress base path for HA ingress compatibility
+    function getBasePath() {
+      const path = window.location.pathname;
+      const lastSlash = path.lastIndexOf('/');
+      return path.substring(0, lastSlash + 1);
+    }
+    const BASE_PATH = getBasePath();
+
     // Fetch wrapper that includes authorization header if token is set
     async function apiFetch(url, options = {}) {
       if (API_TOKEN) {
         options.headers = options.headers || {};
         options.headers['Authorization'] = 'Bearer ' + API_TOKEN;
       }
-      return fetch(url, options);
+      // Prefix with BASE_PATH for HA ingress compatibility
+      const fullUrl = BASE_PATH + url.replace(/^\//, '');
+      return fetch(fullUrl, options);
     }
     
     // Dark mode support
@@ -3855,6 +3932,13 @@ void TigoWebServer::get_cca_info_html(PSRAMString& html) {
     
     // Apply theme on page load
     applyTheme();
+
+    // Set nav links relative to base path (HA ingress compatibility)
+    document.getElementById('nav-dashboard').href = BASE_PATH;
+    document.getElementById('nav-nodes').href = BASE_PATH + 'nodes';
+    document.getElementById('nav-status').href = BASE_PATH + 'status';
+    document.getElementById('nav-yaml').href = BASE_PATH + 'yaml';
+    document.getElementById('nav-cca').href = BASE_PATH + 'cca';
     
     function formatTime(seconds) {
       if (!seconds || seconds === 0 || seconds > 4294967) return 'Never'; // > ~49 days indicates invalid/never
