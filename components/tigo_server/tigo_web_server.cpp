@@ -2178,7 +2178,7 @@ void TigoWebServer::get_dashboard_html(PSRAMString& html) {
     }
     
     // Release banner functions
-    const CURRENT_VERSION = 'v1.4.0'; // Update this with each release
+    const CURRENT_VERSION = 'v1.3.1'; // Update this with each release
     
     async function checkForNewRelease() {
       try {
